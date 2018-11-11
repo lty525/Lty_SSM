@@ -1,0 +1,284 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.itcast.dao.UsersMapper">
+  <resultMap id="BaseResultMap" type="cn.itcast.domain.Users">
+    <id column="ID" jdbcType="VARCHAR" property="id" />
+    <result column="EMAIL" jdbcType="VARCHAR" property="email" />
+    <result column="USERNAME" jdbcType="VARCHAR" property="username" />
+    <result column="PASSWORD" jdbcType="VARCHAR" property="password" />
+    <result column="PHONENUM" jdbcType="VARCHAR" property="phonenum" />
+    <result column="STATUS" jdbcType="DECIMAL" property="status" />
+  </resultMap>
+  <resultMap id="findByname" type="cn.itcast.domain.Users">
+    <id column="ID" jdbcType="VARCHAR" property="id" />
+    <result column="EMAIL" jdbcType="VARCHAR" property="email" />
+    <result column="USERNAME" jdbcType="VARCHAR" property="username" />
+    <result column="PASSWORD" jdbcType="VARCHAR" property="password" />
+    <result column="PHONENUM" jdbcType="VARCHAR" property="phonenum" />
+    <result column="STATUS" jdbcType="DECIMAL" property="status" />
+    <collection property="roles" column="id" ofType="cn.itcast.domain.Role"
+    select="cn.itcast.dao.RoleMapper.findUsersId">
+    </collection>
+  </resultMap>
+
+  <select id="findByUsername" resultMap="findByname" parameterType="string">
+    select  * from users where username =#{username}
+  </select>
+  <select id="findUserByIdAndPd" resultMap="BaseResultMap" parameterType="string">
+    select * from
+  </select>
+  <!--新增 根据id来查询-->
+  <resultMap id="findById" type="cn.itcast.domain.Users">
+    <id column="ID" jdbcType="VARCHAR" property="id" />
+    <result column="EMAIL" jdbcType="VARCHAR" property="email" />
+    <result column="USERNAME" jdbcType="VARCHAR" property="username" />
+    <result column="PASSWORD" jdbcType="VARCHAR" property="password" />
+    <result column="PHONENUM" jdbcType="VARCHAR" property="phonenum" />
+    <result column="STATUS" jdbcType="DECIMAL" property="status" />
+    <collection property="roles" column="id" ofType="cn.itcast.domain.Role"
+                select="cn.itcast.dao.RoleMapper.findUsersId">
+    </collection>
+  </resultMap>
+
+  <select id="findById" resultMap="findById" parameterType="string">
+    select  * from users where id =#{usersId}
+  </select>
+  <!--新增:删除用户的角色-->
+  <delete id="deleteRole" parameterType="string">
+    delete from users_role where userid=#{userId}  and roleid=#{roleId}
+  </delete>
+  <!--删除用户和角色表的关联-->
+  <delete id="deleteUsersRole">
+    delete from users_role where userid=#{id}
+  </delete>
+  <!--新增 给用户 添加角色-->
+  <insert id="addRoleToUser"  parameterType="String">
+    insert into users_role values (#{userId},#{roleId})
+  </insert>
+  <!--新增 根据用户id来查询可以添加的其他啊角色-->
+  <select id="findOthersRole" resultType="cn.itcast.domain.Role">
+      select * from role where id not in (select roleId from users_role where userId =#{id})
+  </select>
+  <!--重置密码-->
+  <update id="updatepassword">
+    update users set password = '$2a$10$E1w6/6seLevaqSNyA9Zlj.Axk8CZN0vxcW/HDZ51BjOHAR53pUzky' where id=#{id}
+  </update>
+  <sql id="Example_Where_Clause">
+    <where>
+      <foreach collection="oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Update_By_Example_Where_Clause">
+    <where>
+      <foreach collection="example.oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Base_Column_List">
+    ID, EMAIL, USERNAME, PASSWORD, PHONENUM, STATUS
+  </sql>
+  <select id="selectByExample" parameterType="cn.itcast.domain.UsersExample" resultMap="BaseResultMap">
+    select
+    <if test="distinct">
+      distinct
+    </if>
+    <include refid="Base_Column_List" />
+    from USERS
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+    <if test="orderByClause != null">
+      order by ${orderByClause}
+    </if>
+  </select>
+
+
+  <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from USERS
+    where ID = #{id,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+    delete from USERS
+    where ID = #{id,jdbcType=VARCHAR}
+  </delete>
+  <delete id="deleteByExample" parameterType="cn.itcast.domain.UsersExample">
+    delete from USERS
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </delete>
+  <insert id="insert" parameterType="cn.itcast.domain.Users">
+    insert into USERS (ID, EMAIL, USERNAME, 
+      PASSWORD, PHONENUM, STATUS
+      )
+    values (#{id,jdbcType=VARCHAR}, #{email,jdbcType=VARCHAR}, #{username,jdbcType=VARCHAR}, 
+      #{password,jdbcType=VARCHAR}, #{phonenum,jdbcType=VARCHAR}, #{status,jdbcType=DECIMAL}
+      )
+  </insert>
+  <insert id="insertSelective" parameterType="cn.itcast.domain.Users">
+    insert into USERS
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        ID,
+      </if>
+      <if test="email != null">
+        EMAIL,
+      </if>
+      <if test="username != null">
+        USERNAME,
+      </if>
+      <if test="password != null">
+        PASSWORD,
+      </if>
+      <if test="phonenum != null">
+        PHONENUM,
+      </if>
+      <if test="status != null">
+        STATUS,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="email != null">
+        #{email,jdbcType=VARCHAR},
+      </if>
+      <if test="username != null">
+        #{username,jdbcType=VARCHAR},
+      </if>
+      <if test="password != null">
+        #{password,jdbcType=VARCHAR},
+      </if>
+      <if test="phonenum != null">
+        #{phonenum,jdbcType=VARCHAR},
+      </if>
+      <if test="status != null">
+        #{status,jdbcType=DECIMAL},
+      </if>
+    </trim>
+  </insert>
+  <select id="countByExample" parameterType="cn.itcast.domain.UsersExample" resultType="java.lang.Long">
+    select count(*) from USERS
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </select>
+  <update id="updateByExampleSelective" parameterType="map">
+    update USERS
+    <set>
+      <if test="record.id != null">
+        ID = #{record.id,jdbcType=VARCHAR},
+      </if>
+      <if test="record.email != null">
+        EMAIL = #{record.email,jdbcType=VARCHAR},
+      </if>
+      <if test="record.username != null">
+        USERNAME = #{record.username,jdbcType=VARCHAR},
+      </if>
+      <if test="record.password != null">
+        PASSWORD = #{record.password,jdbcType=VARCHAR},
+      </if>
+      <if test="record.phonenum != null">
+        PHONENUM = #{record.phonenum,jdbcType=VARCHAR},
+      </if>
+      <if test="record.status != null">
+        STATUS = #{record.status,jdbcType=DECIMAL},
+      </if>
+    </set>
+    <if test="_parameter != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByExample" parameterType="map">
+    update USERS
+    set ID = #{record.id,jdbcType=VARCHAR},
+      EMAIL = #{record.email,jdbcType=VARCHAR},
+      USERNAME = #{record.username,jdbcType=VARCHAR},
+      PASSWORD = #{record.password,jdbcType=VARCHAR},
+      PHONENUM = #{record.phonenum,jdbcType=VARCHAR},
+      STATUS = #{record.status,jdbcType=DECIMAL}
+    <if test="_parameter != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByPrimaryKeySelective" parameterType="cn.itcast.domain.Users">
+    update USERS
+    <set>
+      <if test="email != null">
+        EMAIL = #{email,jdbcType=VARCHAR},
+      </if>
+      <if test="username != null">
+        USERNAME = #{username,jdbcType=VARCHAR},
+      </if>
+      <if test="password != null">
+        PASSWORD = #{password,jdbcType=VARCHAR},
+      </if>
+      <if test="phonenum != null">
+        PHONENUM = #{phonenum,jdbcType=VARCHAR},
+      </if>
+      <if test="status != null">
+        STATUS = #{status,jdbcType=DECIMAL},
+      </if>
+    </set>
+    where ID = #{id,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="cn.itcast.domain.Users">
+    update USERS
+    set EMAIL = #{email,jdbcType=VARCHAR},
+      USERNAME = #{username,jdbcType=VARCHAR},
+      PASSWORD = #{password,jdbcType=VARCHAR},
+      PHONENUM = #{phonenum,jdbcType=VARCHAR},
+      STATUS = #{status,jdbcType=DECIMAL}
+    where ID = #{id,jdbcType=VARCHAR}
+  </update>
+</mapper>
